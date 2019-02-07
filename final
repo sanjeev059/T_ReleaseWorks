@@ -4,8 +4,14 @@ pipeline {
 
     environment{
              stack = "charlie"
+             spec = "analytics-05,analytics-06,baseflow-54,presence-02,dashboard-02,documents-01,documents-20,messenger-01,notifications-01,notifications-02,notifications-27,postUpdate-04,shipmentSearch-01,sidebarMessenger-01,sharing-05,sharing-06,smoke-02,smoke-03,smoke-07,smoke-11,orders-01,contracts-01,timeline-01,timeline-06,tasks-01"
+             execlude = "payments,drivers,tags.systemTags,baseflow-55,baseflow-64,baseflow-53,baseflow-60,calendar-01,analytics-02,notifications-20"
+             bus_rule = "phanindra.v@turvo.com/Temp@123"
+             git_ref = "refs/heads/develop"
         }
+
     stages {
+
         stage('platform') {
             steps {
               script{
@@ -235,6 +241,25 @@ pipeline {
             build job: 'notify-deploy', parameters: [[$class: 'StringParameterValue', name: 'ROLE', value: "notify"], [$class: 'StringParameterValue', name: 'ENVIRONMENT', value: "union"],[$class: 'StringParameterValue', name: 'STACK', value:"$stack"],[$class: 'StringParameterValue', name: 'RELEASE_VERSION', value:"${output}_nightly_1"]]
 
 
+            }
+            }
+        }
+
+        stage("Smoke testing") {
+            steps {
+            script{
+
+            build job: 'quality-aws-smoke-infra',  propagate: true, parameters:
+            [[$class: 'StringParameterValue', name: 'ENVIRONMENT', value: "union"],
+            [$class: 'StringParameterValue', name: 'STACK', value: "$stack"],
+            [$class: 'StringParameterValue', name: 'SPEC', value:"$spec"],
+            [$class: 'StringParameterValue', name: 'RE_RUN_FAILED', value:"2"],
+            [$class: 'StringParameterValue', name: 'SELINIUM_ADDRESS', value:"http://ec2-54-202-137-102.us-west-2.compute.amazonaws.com:4444/wd/hub/"],
+            [$class: 'StringParameterValue', name: 'EXCLUDE', value:"$execlude"],
+            [$class: 'StringParameterValue', name: 'BUSINESS_RULES', value:"$bus_rule"],
+            [$class: 'StringParameterValue', name: 'MAX_INSTANCES', value:"10"],
+            [$class: 'StringParameterValue', name: '	GIT_TARGET', value:"$git_ref"],
+            ]
             }
             }
         }
