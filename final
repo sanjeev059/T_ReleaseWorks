@@ -12,6 +12,16 @@ pipeline {
 
     stages {
 
+        stage('DB Automation'){
+          steps{
+            script{
+            build job: 'mysql-db-automation'
+            build job: 'mongeez-db-automation'
+            build job: 'connect-core-db-automation'
+            }
+          }
+        }
+
         stage('platform') {
             steps {
               script{
