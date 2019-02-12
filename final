@@ -1,4 +1,4 @@
-
+.
 pipeline {
     agent any
 
@@ -11,7 +11,7 @@ pipeline {
         }
 
     stages {
-
+/*
         stage('DB Automation'){
           steps{
             script{
@@ -272,6 +272,15 @@ pipeline {
             ]
             }
             }
+
+        } */
+        stage("Regression"){
+          steps{
+            script{
+            build job: 'quality-aws-infra-regression',  propagate: true, parameters:
+            [[$class: 'StringParameterValue', name: 'STACK', value: "alpha"]
+          }
         }
+      }
     }
 }
