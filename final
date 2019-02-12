@@ -1,4 +1,4 @@
-.
+
 pipeline {
     agent any
 
@@ -11,13 +11,22 @@ pipeline {
         }
 
     stages {
-/*
+
         stage('DB Automation'){
           steps{
             script{
             build job: 'mysql-db-automation'
             build job: 'mongeez-db-automation'
             build job: 'connect-core-db-automation'
+            }
+          }
+        }
+
+        stage("Creating Union Alpha"){
+          steps{
+            script{
+              echo "creating stack union alpha"
+              // TO DO
             }
           }
         }
@@ -273,7 +282,7 @@ pipeline {
             }
             }
 
-        } */
+        }
         stage("Regression"){
           steps{
             script{
