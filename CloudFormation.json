@@ -1,0 +1,9 @@
+"WebServerInstance": {
+    "Type": "AWS::EC2::Instance",
+    "Properties": {
+        "KeyName": "sanjeev",
+        "ImageId": { ami-0f65671a86f061fcd},
+        "InstanceType": "t2.mirco",
+        "Monitoring": "true"
+        }
+}
