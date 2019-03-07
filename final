@@ -2,6 +2,7 @@
 pipeline {
     agent any
 
+
     environment{
              stack = "delta"
              env = "union"
@@ -16,14 +17,14 @@ pipeline {
         stage('DB Automation'){
           steps{
             script{
-            build job: 'mysql-db-automation'
-            build job: 'mongeez-db-automation'
-            build job: 'connect-core-db-automation'
+            build job: 'mysql-db-automation',propagate: true, parameters: [[$class: 'StringParameterValue', name: 'STACK', value: "${env}"]]
+            build job: 'mongeez-db-automation',propagate: true, parameters: [[$class: 'StringParameterValue', name: 'STACK', value: "${env}"]]
+            build job: 'connect-core-db-automation',propagate: true, parameters: [[$class: 'StringParameterValue', name: 'STACK', value: "${env}"]]
             }
           }
         }
 
-        stage("Creating ${env} Alpha"){
+        stage('Creating Union Delta'){
           steps{
             script{
               echo "creating stack ${env} alpha"
@@ -265,6 +266,27 @@ pipeline {
             }
         }
 
+        stage("Wait Stack to Come Up") {
+            steps {
+            script{
+
+                sleep time: 15, unit: 'MINUTES'
+            }
+            }
+        }
+
+        stage("Health Check") {
+            steps {
+            script{
+                build job: 'fusion-health-checker', parameters: [string(name: 'ENV', value: 'union'), string(name: 'STACK', value: 'delta')]
+                build job: 'fusion-health-checker', parameters: [string(name: 'ENV', value: 'union'), string(name: 'STACK', value: 'delta')]
+                build job: 'fusion-health-checker', parameters: [string(name: 'ENV', value: 'union'), string(name: 'STACK', value: 'delta')]
+
+            }
+            }
+        }
+
+
         stage("Smoke testing") {
             steps {
             script{
@@ -284,13 +306,25 @@ pipeline {
             }
 
         }
-        stage("Regression"){
-          steps{
+
+         stage("Regression") {
+            steps {
             script{
+
             build job: 'quality-aws-infra-regression',  propagate: true, parameters:
-            [[$class: 'StringParameterValue', name: 'STACK', value: "${stack}"]
-          }
+            [[$class: 'StringParameterValue', name: 'ENVIRONMENT', value: "${env}"],
+            [$class: 'StringParameterValue', name: 'STACK', value: "$stack"],
+            [$class: 'StringParameterValue', name: 'SPEC', value:"$spec"],
+            [$class: 'StringParameterValue', name: 'RE_RUN_FAILED', value:"2"],
+            [$class: 'StringParameterValue', name: 'SELINIUM_ADDRESS', value:"http://ec2-54-202-137-102.us-west-2.compute.amazonaws.com:4444/wd/hub/"],
+            [$class: 'StringParameterValue', name: 'EXCLUDE', value:"$execlude"],
+            [$class: 'StringParameterValue', name: 'BUSINESS_RULES', value:"$bus_rule"],
+            [$class: 'StringParameterValue', name: 'MAX_INSTANCES', value:"10"],
+            [$class: 'StringParameterValue', name: '	GIT_TARGET', value:"$git_ref"],
+            ]
+            }
+            }
+
         }
-      }
     }
 }
