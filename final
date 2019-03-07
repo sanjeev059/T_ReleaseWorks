@@ -17,6 +17,7 @@ pipeline {
         stage('DB Automation'){
           steps{
             script{
+            slackSend (channel: "#release-engg", color: '#FFFF00', message: "STARTED: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
             build job: 'mysql-db-automation',propagate: true, parameters: [[$class: 'StringParameterValue', name: 'STACK', value: "${env}"]]
             build job: 'mongeez-db-automation',propagate: true, parameters: [[$class: 'StringParameterValue', name: 'STACK', value: "${env}"]]
             build job: 'connect-core-db-automation',propagate: true, parameters: [[$class: 'StringParameterValue', name: 'STACK', value: "${env}"]]
@@ -325,6 +326,15 @@ pipeline {
             }
             }
 
+        }
+    }
+    post {
+
+        success{
+            slackSend (channel: "#release-engg", color: '#00FF00', message: "SUCCESSFUL: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
+        }
+        failure {
+      slackSend (channel: "#release-engg", color: '#FF0000', message: "FAILED: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
         }
     }
 }
